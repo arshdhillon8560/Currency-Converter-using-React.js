@@ -1,12 +1,59 @@
-# React + Vite
+# Currency Converter & Custom Hooks in React
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Currency Converter
 
-Currently, two official plugins are available:
+A **currency converter** is a tool that allows users to convert an amount from one currency to another using real-time exchange rates. In a React application, this typically involves:
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- Fetching exchange rates from an API (e.g., [exchangerate-api.com](https://www.exchangerate-api.com/))
+- Allowing users to input an amount and select source/target currencies
+- Displaying the converted value
 
-## Expanding the ESLint configuration
+## Custom Hooks
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+**Custom hooks** in React are JavaScript functions that start with `use` and allow you to extract and reuse stateful logic across components.
+
+### Example: `useCurrencyConverter` Hook
+
+A custom hook for currency conversion might:
+
+- Fetch and store exchange rates
+- Provide a function to convert amounts
+- Handle loading and error states
+
+```jsx
+import { useState, useEffect } from 'react';
+
+function useCurrencyConverter(base = 'USD') {
+    const [rates, setRates] = useState({});
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetch(`https://api.exchangerate-api.com/v4/latest/${base}`)
+            .then(res => res.json())
+            .then(data => {
+                setRates(data.rates);
+                setLoading(false);
+            });
+    }, [base]);
+
+    const convert = (amount, to) => {
+        if (!rates[to]) return null;
+        return amount * rates[to];
+    };
+
+    return { rates, convert, loading };
+}
+```
+
+### Usage
+
+```jsx
+const { rates, convert, loading } = useCurrencyConverter('USD');
+const amountInEur = convert(100, 'EUR');
+```
+
+## Benefits
+
+- **Separation of concerns:** UI and logic are decoupled
+- **Reusability:** Use the hook in multiple components
+- **Testability:** Easier to test logic in isolation
